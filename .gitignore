@@ -1,0 +1,14 @@
+# dependencies and build output
+node_modules/
+pnpm-lock.yaml
+
+# local logs and OS junk
+*.log
+.DS_Store
+Thumbs.db
+*.tmp
+
+# runtime state written next to the plugin while developing
+relay-config.json
+relay-launch.vbs
+restart.log

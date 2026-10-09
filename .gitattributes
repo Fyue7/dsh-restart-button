@@ -1,0 +1,12 @@
+# keep the repository LF, like the rest of the profile
+* text=auto eol=lf
+
+# Windows script hosts want CRLF on checkout
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# binaries
+*.png binary
+*.gif binary
+*.jpg binary
+*.webp binary

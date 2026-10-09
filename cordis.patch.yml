@@ -1,0 +1,6 @@
+# dsh-restart-button bundle layer: inserts the plugin row into the profile composition.
+# The Host half is lib/index.js; package.json's dsh.client declaration makes DSH
+# discover client/index.js (exports["./client"]) for the Web UI.
+- insert:
+    - id: restart-button
+      name: dsh-restart-button
