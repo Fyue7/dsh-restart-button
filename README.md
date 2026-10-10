@@ -63,14 +63,19 @@ node E:\agent\projects\dsh-restart-button\tools\sync.mjs
 # 然后点会话头部那颗 ⟳
 ```
 
-`sync.mjs` 那一步不能省：profile 用的是 `nodeLinker: hoisted`，`file:` 依赖是硬链接拷贝。
-但两个 `.ps1` 不需要 —— 它们每次都是现读的。
+`sync.mjs` 那一步不能省：profile 用的是 `nodeLinker: hoisted`，`file:` 依赖是**装的时候抄一份**，
+源目录和运行时目录是两份独立的数据（实测不是硬链接，`fsutil hardlink list` 各只列自己一条）。
+宿主加载的、按 ⟳ 时找的，都是抄过去的那份。
+
+`tools/` 必须跟着一起同步 —— 按钮找的 `restart-dsh.ps1` 就在抄过去的那份里，
+只同步 `lib` / `client` 的话，脚本改了多少次按钮都还是跑旧的。
 
 ## 用法
 
 - **界面**：会话头部右侧那一排，文件夹图标右边一格，只有一个 ⟳。点一下 3 秒倒计时，再点一下取消。
 - **命令**：`/restart now`、`/restart dry`（空转自检，只报账不动手）、`/restart status`。
-- **桌面兜底**：`重启 DSH.cmd`（界面挂了也能用，走同一个 helper）。
+- **兜底**：双击仓库里的 `tools\restart-dsh.cmd`（路径跟着自己走，界面挂了也能用，走同一个 helper）。
+  桌面上那份独立拷贝已移除，免得两个入口各跑一份脚本。
 
 ## 日志
 

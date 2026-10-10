@@ -1,4 +1,14 @@
-# dsh-restart-button - the helper that arms the relay and kills DSH.
+# dsh-restart-button - the helper: it arms the relay that kills and relaunches DSH.
+#
+# SINCE 2026-10-09 THE KILL LIVES IN THE RELAY, NOT HERE
+#   The host now confines the children it spawns, and a confined process can see
+#   the DSH processes but not terminate them: measured at 23:12, this script asked
+#   the OS to kill 7 and exactly one died, while the other six kept their original
+#   creation times. The relay is created by the Task Scheduler service with the
+#   user's own token, outside that confinement, and kills them properly.
+#   So this script now only: writes the config + hidden launcher, arms the relay,
+#   confirms the relay is alive, and exits. The inline kill below is a last-resort
+#   fallback for when no relay could be armed at all.
 #
 # WHY THE RELAY EXISTS AT ALL
 #   Everything inside this process tree dies together with the DSH host: the host
@@ -236,14 +246,19 @@ if ($DryRun) {
 	exit 0
 }
 
-# 0. Let the caller's HTTP response get home before anything is killed.
-Start-Sleep -Milliseconds 700
-
 # 1. Arm the relay first, through whichever creator actually works.
 $relayVia = Arm-Relay
 Write-Log "relay armed via: $relayVia"
 
-# 2. Kill everything carrying the image name (host and shell are the same file).
+if ($relayVia -ne 'inline' -and $relayVia -ne 'none') {
+	Write-Log "helper done: relay is alive and owns the kill (elapsed=$([int]((Get-Date) - $t0).TotalMilliseconds)ms)"
+	exit 0
+}
+
+Write-Log 'no relay came up - falling back to the inline kill + launch'
+Start-Sleep -Milliseconds 700
+
+# 2. Fallback path only: kill everything carrying the image name, then launch.
 $alive = @(Get-Targets)
 Write-Log "stage1: alive=$($alive.Count) pid=$((($alive | ForEach-Object { $_.Id }) -join ','))"
 foreach ($p in $alive) {
